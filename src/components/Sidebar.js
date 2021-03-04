@@ -1,8 +1,22 @@
-import { Apps, Create, Drafts, Edit,BookmarkBorder, ExpandLess, FiberManualRecord, FileCopy, Inbox, InsertComment, PeopleAlt } from '@material-ui/icons'
-import React from 'react'
+import { Apps, Create, Drafts, Edit,BookmarkBorder, ExpandLess, FiberManualRecord, FileCopy, Inbox, InsertComment, PeopleAlt, ExpandMore, Add } from '@material-ui/icons'
+import React, { useState } from 'react'
 import styled from 'styled-components';
 import SidebarOption from "./SidebarOption"
+import { useCollection } from 'react-firebase-hooks/firestore'
+import { auth, db } from '../firebase'
+import { useAuthState } from 'react-firebase-hooks/auth';
+
+
 function Sidebar() {
+    const [channels, loading, error] = useCollection(db.collection("rooms"));
+
+    const [user] = useAuthState(auth);
+    
+    
+    console.log(channels, "channels");
+
+    console.log("error", error)
+
     return (
         <SidebarContainer>
             <SidebarHeader>
@@ -10,7 +24,7 @@ function Sidebar() {
                     <h2>MDC</h2>
                     <h3>
                         <FiberManualRecord/>
-                        Mate Daniel
+                        {user.displayName}
                     </h3>
                 </SidebarInfo>
                 <Create />
@@ -22,9 +36,16 @@ function Sidebar() {
             <SidebarOption Icon={PeopleAlt} title="Channel browser" />
             <SidebarOption Icon={Apps} title="People & user groups" />
             <SidebarOption Icon={FileCopy} title="People & user groups" />
-            <SidebarOption Icon={ExpandLess} title="People & user groups" />
+            <SidebarOption Icon={ExpandLess} title="Show less" />
+            <hr />
+            <SidebarOption Icon={ExpandMore} title="Channels" />
+            <hr />
+            <SidebarOption Icon={Add} title="Add Channel" addChannelOption={true} />
+            {channels?.docs.map(doc => (
+                <SidebarOption key={doc.id} id={doc.id}  title={doc.data().name} />
+            ))
 
-            
+            }
         </SidebarContainer>
     )
 }
@@ -39,6 +60,12 @@ const SidebarContainer = styled.div`
     border-top: 1px solid #49274b;
     max-width: 260px;
     margin-top: 60px;
+
+    > hr {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #49274b;
+    }
 `;
 
 const SidebarHeader = styled.div`
